@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Geilo Coins Fortschrittsring</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: transparent;
+    }
+    canvas {
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="myChart" width="300" height="300"></canvas>
+  <script>
+    // Plugin: Zeichnet den Level groß in der Mitte
+    const centerTextPlugin = {
+      id: 'centerText',
+      beforeDraw(chart) {
+        const ctx = chart.ctx;
+        const width = chart.width;
+        const height = chart.height;
+
+        const meta = chart.getDatasetMeta(0);
+        if (!meta.data || !meta.data[0]) return;
+        const arc = meta.data[0];
+        const innerRadius = arc.innerRadius;
+        const outerRadius = arc.outerRadius;
+
+        // Mittelwert zwischen innen & außen
+        const radius = (innerRadius + outerRadius) / 2;
+        // Schriftgröße: aggressive Skalierung
+        const fontSize = Math.min(radius * 1.5, radius * 2);
+
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#000';
+        ctx.font = `${fontSize}px sans-serif`;
+        // Der Level wurde in Chart gespeichert als property
+        ctx.fillText(chart._geilo_level?.toString() ?? '', width / 2, height / 2);
+        ctx.restore();
+      }
+    };
+
+    const ctx = document.getElementById('myChart').getContext('2d');
+    const myChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Fortschritt', 'Rest'],
+        datasets: [{
+          data: [0, 100],
+          backgroundColor: ['#4CAF50', '#E0E0E0'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        cutout: '70%',
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        }
+      },
+      plugins: [centerTextPlugin]
+    });
+
+    // Funktion, die deine API abruft und Chart aktualisiert
+    async function refreshFromAPI() {
+      try {
+        const resp = await fetch('https://geilocoins.vercel.app/api/geilocoins');
+        if (!resp.ok) {
+          throw new Error(`HTTP Fehler: ${resp.status}`);
+        }
+        const payload = await resp.json();
+        const { level, progressPercent, rest } = payload;
+
+        // Speichere Level in Chart (für Plugin)
+        myChart._geilo_level = level;
+
+        myChart.data.datasets[0].data = [ progressPercent, rest ];
+        myChart.update();
+      } catch (err) {
+        console.error('Fehler beim Laden der API:', err);
+      }
+    }
+
+    // Erstaufruf + Intervall
+    refreshFromAPI();
+    setInterval(refreshFromAPI, 10 * 1000);
+  </script>
+</body>
+</html>
