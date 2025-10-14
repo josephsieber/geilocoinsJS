@@ -77,7 +77,7 @@
     // Funktion, die deine API abruft und Chart aktualisiert
     async function refreshFromAPI() {
       try {
-        const resp = await fetch('https://geilocoins.vercel.app/api/geilocoins');
+        const resp = await fetch('https://geilocoins-js.vercel.app/api/geilocoins');
         if (!resp.ok) {
           throw new Error(`HTTP Fehler: ${resp.status}`);
         }
