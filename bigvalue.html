@@ -30,7 +30,7 @@
   <script>
     async function loadValue() {
       try {
-        const resp = await fetch('https://geilocoins.vercel.app/api/geilocoins');
+        const resp = await fetch('https://geilocoins-js.vercel.app/api/geilocoins');
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
         const data = await resp.json();
         // Hier wird kontostand benutzt, wenn in deiner API der kontostand-Name richtig gesetzt wurde
