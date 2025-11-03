@@ -68,7 +68,7 @@ export default async function handler(req, res) {
     const rest = 100 - progressPercent;
 
     // Neuer Wert: kontostand
-    const kontostand = progressPercent;
+    const kontostand = getNum(p["Kontostand (Zahl)"]);
 
     return res.status(200).json({
       level,
